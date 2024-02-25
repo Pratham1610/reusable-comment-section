@@ -2,7 +2,13 @@ import React, { useState } from "react";
 import unstarIcon from "../resources/star1.svg";
 import starIcon from "../resources/star2.svg";
 
-const Comment = ({ comment, onDelete, onReply, onToggleStar }) => {
+const Comment = ({
+    comment,
+    onDelete,
+    onReply,
+    onToggleStar,
+    showTimestamp,
+}) => {
     const [reply, setReply] = useState("");
 
     const handleDelete = () => {
@@ -20,39 +26,53 @@ const Comment = ({ comment, onDelete, onReply, onToggleStar }) => {
 
     return (
         <div className="border border-gray-300 rounded-md p-4 mb-4">
-            <div className="flex items-center justify-between">
-                <div>{comment.text}</div>
-                <button className="ml-auto" onClick={handleStar}>
-                    {comment.starred ? (
-                        <img src={starIcon} alt="Star" className="h-6 w-6" />
-                    ) : (
-                        <img
-                            src={unstarIcon}
-                            alt="Unstar"
-                            className="h-6 w-6 opacity-50"
-                        />
-                    )}
-                </button>
+            {showTimestamp && (
+                <div className="text-sm text-gray-500 mb-2">
+                    {comment.timestamp}
+                </div>
+            )}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+                <div className="flex-grow md:w-3/4">{comment.text}</div>
+                <div className="md:ml-auto mt-2 md:mt-0">
+                    <button
+                        className="mr-2 text-blue-500"
+                        onClick={handleDelete}
+                    >
+                        Delete
+                    </button>
+                    <button className="mr-2 text-blue-500" onClick={handleStar}>
+                        {comment.starred ? (
+                            <img
+                                src={starIcon}
+                                alt="Star"
+                                className="h-6 w-6"
+                            />
+                        ) : (
+                            <img
+                                src={unstarIcon}
+                                alt="Unstar"
+                                className="h-6 w-6 opacity-50"
+                            />
+                        )}
+                    </button>
+                </div>
             </div>
             <div className="mt-2 flex items-center">
-                <button className="mr-2 text-blue-500" onClick={handleDelete}>
-                    Delete
-                </button>
-                <div className="flex items-center">
+                <div className="flex-grow">
                     <input
                         type="text"
                         value={reply}
                         onChange={(e) => setReply(e.target.value)}
                         placeholder="Reply..."
-                        className="border border-gray-300 rounded-md p-1 mr-2"
+                        className="border border-gray-300 rounded-md p-1 mr-2 w-full"
                     />
-                    <button
-                        className="bg-blue-500 text-white px-3 py-1 rounded-md"
-                        onClick={handleReply}
-                    >
-                        Reply
-                    </button>
                 </div>
+                <button
+                    className="bg-blue-500 text-white px-3 py-1 rounded-md"
+                    onClick={handleReply}
+                >
+                    Reply
+                </button>
             </div>
             {comment.replies &&
                 comment.replies.map((reply) => (
@@ -71,6 +91,7 @@ const CommentSection = () => {
     const [comments, setComments] = useState([]);
     const [input, setInput] = useState("");
     const [sortType, setSortType] = useState("");
+    const [showTimestamp, setShowTimestamp] = useState(true);
 
     const handlePostComment = () => {
         if (input.trim() !== "") {
@@ -78,6 +99,7 @@ const CommentSection = () => {
                 id: comments.length + 1,
                 text: input,
                 starred: false,
+                timestamp: new Date().toLocaleString(),
                 replies: [],
             };
             setComments([...comments, newComment]);
@@ -90,11 +112,6 @@ const CommentSection = () => {
     };
 
     const handleReplyComment = (id, replyText) => {
-        const commentToReply = comments.find((comment) => comment.id === id);
-        if (commentToReply && commentToReply.replies.length >= 3) {
-            alert("Cannot add reply. Maximum depth reached.");
-            return;
-        }
         const updatedComments = comments.map((comment) => {
             if (comment.id === id) {
                 return {
@@ -129,6 +146,10 @@ const CommentSection = () => {
 
     const handleSortChange = (e) => {
         setSortType(e.target.value);
+    };
+
+    const toggleTimestamp = () => {
+        setShowTimestamp(!showTimestamp);
     };
 
     // Sorting function
@@ -167,6 +188,21 @@ const CommentSection = () => {
                     Post
                 </button>
             </div>
+            <div className="mb-4 flex items-center">
+                <button
+                    className={`border border-gray-300 rounded-md p-1 ${
+                        showTimestamp
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-200 text-gray-700"
+                    }`}
+                    onClick={toggleTimestamp}
+                >
+                    {showTimestamp ? "Hide" : "Show"}
+                </button>
+                <label htmlFor="showTimestamp" className="mr-2">
+                    Show Timestamp
+                </label>
+            </div>
             <div className="mb-4">
                 <label htmlFor="sortSelect" className="mr-2">
                     Sort by:
@@ -192,6 +228,7 @@ const CommentSection = () => {
                     onDelete={handleDeleteComment}
                     onReply={handleReplyComment}
                     onToggleStar={handleToggleStar}
+                    showTimestamp={showTimestamp}
                 />
             ))}
         </div>
