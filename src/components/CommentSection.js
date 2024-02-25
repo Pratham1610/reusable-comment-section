@@ -19,20 +19,9 @@ const Comment = ({ comment, onDelete, onReply, onToggleStar }) => {
     };
 
     return (
-        <div className="border border-gray-300 rounded-md p-4 mb-4 flex flex-col">
-            <div>{comment.text}</div>
-            <div className="mt-2 flex items-center">
-                <div>
-                    <button
-                        className="mr-2 text-blue-500"
-                        onClick={handleDelete}
-                    >
-                        Delete
-                    </button>
-                    <button className="text-blue-500" onClick={handleReply}>
-                        Reply
-                    </button>
-                </div>
+        <div className="border border-gray-300 rounded-md p-4 mb-4">
+            <div className="flex items-center justify-between">
+                <div>{comment.text}</div>
                 <button className="ml-auto" onClick={handleStar}>
                     {comment.starred ? (
                         <img src={starIcon} alt="Star" className="h-6 w-6" />
@@ -45,6 +34,26 @@ const Comment = ({ comment, onDelete, onReply, onToggleStar }) => {
                     )}
                 </button>
             </div>
+            <div className="mt-2 flex items-center">
+                <button className="mr-2 text-blue-500" onClick={handleDelete}>
+                    Delete
+                </button>
+                <div className="flex items-center">
+                    <input
+                        type="text"
+                        value={reply}
+                        onChange={(e) => setReply(e.target.value)}
+                        placeholder="Reply..."
+                        className="border border-gray-300 rounded-md p-1 mr-2"
+                    />
+                    <button
+                        className="bg-blue-500 text-white px-3 py-1 rounded-md"
+                        onClick={handleReply}
+                    >
+                        Reply
+                    </button>
+                </div>
+            </div>
             {comment.replies &&
                 comment.replies.map((reply) => (
                     <div
@@ -54,13 +63,6 @@ const Comment = ({ comment, onDelete, onReply, onToggleStar }) => {
                         {reply.text}
                     </div>
                 ))}
-            <input
-                type="text"
-                value={reply}
-                onChange={(e) => setReply(e.target.value)}
-                placeholder="Reply..."
-                className="border border-gray-300 rounded-md mt-2 p-1"
-            />
         </div>
     );
 };
@@ -88,6 +90,11 @@ const CommentSection = () => {
     };
 
     const handleReplyComment = (id, replyText) => {
+        const commentToReply = comments.find((comment) => comment.id === id);
+        if (commentToReply && commentToReply.replies.length >= 3) {
+            alert("Cannot add reply. Maximum depth reached.");
+            return;
+        }
         const updatedComments = comments.map((comment) => {
             if (comment.id === id) {
                 return {
