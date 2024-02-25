@@ -112,6 +112,11 @@ const CommentSection = () => {
     };
 
     const handleReplyComment = (id, replyText) => {
+        const commentToReply = comments.find((comment) => comment.id === id);
+        if (commentToReply && commentToReply.replies.length >= 3) {
+            alert("Cannot add reply. Maximum depth reached.");
+            return;
+        }
         const updatedComments = comments.map((comment) => {
             if (comment.id === id) {
                 return {
